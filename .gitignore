@@ -16,6 +16,11 @@ day1.png.import
 屏幕截图*.png
 屏幕截图*.png.import
 
+# 导出产物（打包给朋友的 exe，不入版本控制）
+/build/
+*.exe
+*.pck
+
 # 操作系统垃圾文件
 .DS_Store
 Thumbs.db
