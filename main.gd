@@ -145,6 +145,7 @@ var _setting_fx_light_leak: bool = false ## 画面氛围：暖色漏光
 var _setting_breathe_amp: float = 0.04
 var _setting_breathe_period: float = 1.3
 var _setting_idle_float: bool = false  ## 闲置微浮动（块静止时轻微上下漂浮）
+var _setting_inspector_docked: bool = false  ## 属性栏固定右侧（true=钉右侧，false=跟随浮窗）
 
 # ── 全局 Ctrl 旋转状态（允许在控件外拖拽旋转选中块）──
 var _global_rotating: bool = false
@@ -412,6 +413,7 @@ const SETTING_ID_FX_VIGNETTE: int = 17
 const SETTING_ID_FX_SCANLINES: int = 18
 const SETTING_ID_FX_GRAIN: int = 19
 const SETTING_ID_FX_LIGHT_LEAK: int = 20
+const SETTING_ID_DOCK_INSPECTOR: int = 21
 ## 吸附网格大小（像素）
 const GRID_SNAP_SIZE: int = 24
 
@@ -440,6 +442,7 @@ func _setup_settings_menu():
 	_add_check(popup, "Ctrl+拖拽旋转块", SETTING_ID_CTRL_ROTATE, _setting_ctrl_drag_rotate)
 	_add_check(popup, "移动吸附网格", SETTING_ID_SNAP_GRID, _setting_snap_grid)
 	_add_check(popup, "🎐 闲置微浮动", SETTING_ID_FLOAT, _setting_idle_float)
+	_add_check(popup, "📐 属性栏固定右侧", SETTING_ID_DOCK_INSPECTOR, _setting_inspector_docked)
 	popup.add_separator()
 	_add_section_title(popup, "✦ 粒子")
 	_add_check(popup, "✨ 鼠标星光轨迹", SETTING_ID_FX_TRAIL, _setting_fx_trail)
@@ -550,6 +553,10 @@ func _on_setting_toggled(id: int) -> void:
 			_setting_fx_light_leak = not _setting_fx_light_leak
 			_refresh_check(popup, idx, _setting_fx_light_leak)
 			_apply_canvas_fx()
+			_save_settings()
+		SETTING_ID_DOCK_INSPECTOR:
+			_setting_inspector_docked = not _setting_inspector_docked
+			_refresh_check(popup, idx, _setting_inspector_docked)
 			_save_settings()
 		SETTING_ID_BREATHE:
 			_prompt_breathe_settings()
@@ -2487,6 +2494,8 @@ func _load_settings() -> void:
 			_setting_breathe_period = float(d["breathe_period"])
 		if d.has("idle_float"):
 			_setting_idle_float = bool(d["idle_float"])
+		if d.has("inspector_docked"):
+			_setting_inspector_docked = bool(d["inspector_docked"])
 		if d.has("md_font_size"):
 			_setting_md_font_size = int(d["md_font_size"])
 		if d.has("md_font_color"):
@@ -2525,6 +2534,7 @@ func _save_settings() -> void:
 		"breathe_amp": _setting_breathe_amp,
 		"breathe_period": _setting_breathe_period,
 		"idle_float": _setting_idle_float,
+		"inspector_docked": _setting_inspector_docked,
 		"md_font_size": _setting_md_font_size,
 		"md_font_color": _setting_md_font_color.to_html(false),
 		"md_bg_color": _setting_md_bg_color.to_html(false),
@@ -2701,13 +2711,16 @@ func _process(_delta: float) -> void:
 	# 属性浮层跟随选中块（画布移动/缩放时保持贴附）
 	if _inspector_popup != null and _inspector_popup.visible \
 	   and _current_selected_block != null and is_instance_valid(_current_selected_block):
-		var br: Rect2 = _current_selected_block.get_global_rect()
-		var anchor_global := Vector2(br.end.x + 6.0, br.position.y)
-		var local_pos: Vector2 = get_global_transform().affine_inverse() * anchor_global
-		var vp := get_viewport_rect().size
-		local_pos.x = clampf(local_pos.x, 4.0, vp.x - _inspector_popup.size.x - 4.0)
-		local_pos.y = clampf(local_pos.y, 4.0, vp.y - _inspector_popup.size.y - 4.0)
-		_inspector_popup.position = local_pos
+		var vp := Vector2(get_viewport_rect().size)
+		if _setting_inspector_docked:
+			_inspector_popup.position = Vector2(vp.x - _inspector_popup.size.x - 8.0, 64.0)
+		else:
+			var br: Rect2 = _current_selected_block.get_global_rect()
+			var anchor_global := Vector2(br.end.x + 6.0, br.position.y)
+			var local_pos: Vector2 = get_global_transform().affine_inverse() * anchor_global
+			local_pos.x = clampf(local_pos.x, 4.0, vp.x - _inspector_popup.size.x - 4.0)
+			local_pos.y = clampf(local_pos.y, 4.0, vp.y - _inspector_popup.size.y - 4.0)
+			_inspector_popup.position = local_pos
 	# 底部提示条：按当前状态（选中/编辑/框选）刷新快捷键提示
 	_update_hint_if_changed()
 
@@ -4337,13 +4350,16 @@ func _show_inspector() -> void:
 		return
 	_refresh_inspector()
 	_inspector_popup.size = Vector2(180.0, 150.0)
-	var br: Rect2 = _current_selected_block.get_global_rect()
-	var anchor_global := Vector2(br.end.x + 6.0, br.position.y)
-	var local_pos: Vector2 = get_global_transform().affine_inverse() * anchor_global
 	var vp := get_viewport_rect().size
-	local_pos.x = clampf(local_pos.x, 4.0, vp.x - 190.0)
-	local_pos.y = clampf(local_pos.y, 4.0, vp.y - 130.0)
-	_inspector_popup.position = local_pos
+	if _setting_inspector_docked:
+		_inspector_popup.position = Vector2(vp.x - 190.0, 64.0)
+	else:
+		var br2: Rect2 = _current_selected_block.get_global_rect()
+		var anchor2 := Vector2(br2.end.x + 6.0, br2.position.y)
+		var lp2: Vector2 = get_global_transform().affine_inverse() * anchor2
+		lp2.x = clampf(lp2.x, 4.0, vp.x - 190.0)
+		lp2.y = clampf(lp2.y, 4.0, vp.y - 130.0)
+		_inspector_popup.position = lp2
 	_inspector_popup.visible = true
 
 
