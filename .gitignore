@@ -1,0 +1,22 @@
+# Godot 编辑器缓存（朋友打开项目会自动重新生成）
+.godot/
+
+# 运行时用户数据保存在 user://data（用户目录）；
+# 项目内的 data/ 只是开发遗留的测试文件，不应分发
+/data/
+/壁纸/
+
+# 私人：Claude Code 会话 & AI 交接文档
+.claude/
+/agent_read/
+
+# 开发临时截图 / 大图（含其 .import 旁车文件）
+day1.png
+day1.png.import
+屏幕截图*.png
+屏幕截图*.png.import
+
+# 操作系统垃圾文件
+.DS_Store
+Thumbs.db
+desktop.ini

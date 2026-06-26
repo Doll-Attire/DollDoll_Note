@@ -1,0 +1,476 @@
+[gd_scene load_steps=4 format=3 uid="uid://dolldollnotemain"]
+
+[ext_resource type="Script" path="res://main.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/text_block.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/paper_drop_target.gd" id="3"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = ExtResource("1")
+
+[node name="Toolbar" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_bottom = 56.0
+color = Color(0.88, 0.88, 0.91, 1)
+
+[node name="ToolbarDivider" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_top = 56.0
+offset_bottom = 57.0
+color = Color(0.78, 0.78, 0.82, 1)
+mouse_filter = 2
+
+[node name="ToolbarInner" type="HBoxContainer" parent="Toolbar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12
+offset_right = -12
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+text = "DollDollNote"
+theme_override_font_sizes/font_size = 22
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="Separator0" type="VSeparator" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="OpenBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "📂 打开"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(80, 32)
+
+[node name="NewBtn" type="MenuButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✨ 新建"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(80, 32)
+tooltip_text = "新建笔记（下拉勾选要保留的纸张样式）"
+
+[node name="SepOpen" type="VSeparator" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="AddTextBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "＋ 文本块"
+theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2i(100, 32)
+
+[node name="AddImageBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "＋ 图片"
+theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2i(80, 32)
+
+[node name="ShapeBtn" type="MenuButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "▱ 形状"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(70, 32)
+tooltip_text = "矩形 / 椭圆 / 直线 / 箭头"
+
+[node name="DoodleBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✏️ 涂鸦"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(70, 32)
+tooltip_text = "手绘涂鸦块（右键拖动画线，右键单击弹菜单）"
+
+[node name="DiaryBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "📅 日记"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(70, 32)
+tooltip_text = "天气、心情、时间戳、模板"
+
+[node name="EmojiBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "😊 Emoji"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(80, 32)
+tooltip_text = "插入 Emoji / 拖拽放置为贴纸（常驻）"
+
+[node name="MarkdownBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "📝 MD"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(70, 32)
+tooltip_text = "全屏 Markdown 编辑器（带实时预览，保留画布特效）"
+
+[node name="NoteListBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "📓 笔记"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(70, 32)
+toggle_mode = true
+tooltip_text = "显示/隐藏 笔记列表面板（多日记切换）"
+
+[node name="Separator1" type="VSeparator" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="FontSizeLabel" type="Label" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "字号: —"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+
+[node name="FontColorBtn" type="ColorPickerButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(28, 28)
+color = Color(0, 0, 0, 1)
+edit_alpha = false
+
+[node name="FontOptionBtn" type="OptionButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(90, 28)
+theme_override_font_sizes/font_size = 12
+visible = false
+tooltip_text = "字体"
+
+[node name="OutlineLabel" type="Label" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "描边"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+visible = false
+
+[node name="OutlineSpin" type="SpinBox" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(56, 28)
+theme_override_font_sizes/font_size = 12
+min_value = 0.0
+max_value = 20.0
+value = 0.0
+visible = false
+
+[node name="OutlineColorBtn" type="ColorPickerButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(28, 28)
+color = Color(0, 0, 0, 1)
+edit_alpha = false
+visible = false
+
+[node name="BlockBgLabel" type="Label" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "块底"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+visible = false
+
+[node name="BlockBgColorBtn" type="ColorPickerButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(28, 28)
+color = Color(1, 0.95, 0.88, 1)
+edit_alpha = false
+visible = false
+
+[node name="TextMoreBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Aa 更多"
+theme_override_font_sizes/font_size = 12
+custom_minimum_size = Vector2i(70, 28)
+visible = false
+tooltip_text = "行间距、框发光、圆角等进阶文本设置"
+
+[node name="InsertBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "✎ 插入"
+theme_override_font_sizes/font_size = 12
+custom_minimum_size = Vector2i(60, 28)
+visible = false
+tooltip_text = "插入 BBCode/Markdown 语法"
+
+[node name="SeparatorR" type="VSeparator" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="RotateLabel" type="Label" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "旋转:"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+visible = false
+
+[node name="RotateLeftBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "↺"
+theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2i(28, 28)
+visible = false
+
+[node name="RotateRightBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "↻"
+theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2i(28, 28)
+visible = false
+
+[node name="RotateResetBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "⟲ 归零"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(50, 28)
+visible = false
+
+[node name="SeparatorS" type="VSeparator" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="BgLabel" type="Label" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+text = "纸色"
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.4, 0.4, 0.4, 1)
+
+[node name="BgColorPicker" type="ColorPickerButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(28, 28)
+color = Color(1, 1, 1, 1)
+edit_alpha = false
+
+[node name="Separator2" type="VSeparator" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="CanvasSizeBtn" type="MenuButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "画布"
+theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2i(80, 32)
+
+[node name="Separator3" type="VSeparator" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="StickerToggle" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "📎 贴纸"
+theme_override_font_sizes/font_size = 16
+toggle_mode = true
+custom_minimum_size = Vector2i(90, 32)
+
+[node name="Separator4" type="VSeparator" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+custom_minimum_size = Vector2i(4, 28)
+
+[node name="Spacer" type="Control" parent="Toolbar/ToolbarInner"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="HelpBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "❓"
+theme_override_font_sizes/font_size = 16
+custom_minimum_size = Vector2i(34, 32)
+tooltip_text = "帮助 / 快捷键（F1）"
+
+[node name="SettingsBtn" type="MenuButton" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "⚙ 设置"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(80, 32)
+
+[node name="ExportJsonBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "导出笔记"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(90, 32)
+
+[node name="ExportImageBtn" type="Button" parent="Toolbar/ToolbarInner"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "导出 图片"
+theme_override_font_sizes/font_size = 14
+custom_minimum_size = Vector2i(90, 32)
+
+[node name="Body" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 56.0
+offset_bottom = -26.0
+
+[node name="PaperScroll" type="Control" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+clip_contents = true
+
+[node name="BgRect" type="ColorRect" parent="Body/PaperScroll"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.82, 0.82, 0.85, 1)
+mouse_filter = 2
+
+[node name="Paper" type="Panel" parent="Body/PaperScroll"]
+unique_name_in_owner = true
+layout_mode = 1
+custom_minimum_size = Vector2i(1200, 1600)
+mouse_filter = 0
+script = ExtResource("3")
+
+[node name="Splitter" type="Control" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(6, 0)
+mouse_default_cursor_shape = 11
+
+[node name="StickerPanel" type="VBoxContainer" parent="Body"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2i(220, 0)
+visible = false
+theme_override_constants/separation = 6
+
+[node name="StickerHeader" type="HBoxContainer" parent="Body/StickerPanel"]
+layout_mode = 2
+custom_minimum_size = Vector2i(0, 36)
+
+[node name="StickerTitle" type="Label" parent="Body/StickerPanel/StickerHeader"]
+layout_mode = 2
+text = "贴纸库"
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
+
+[node name="SpacerS" type="Control" parent="Body/StickerPanel/StickerHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OpenStickerDir" type="Button" parent="Body/StickerPanel/StickerHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "📂"
+theme_override_font_sizes/font_size = 16
+
+[node name="RefreshStickers" type="Button" parent="Body/StickerPanel/StickerHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "⟳"
+theme_override_font_sizes/font_size = 16
+
+[node name="StickerToEmojiBtn" type="Button" parent="Body/StickerPanel/StickerHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "😊"
+theme_override_font_sizes/font_size = 16
+tooltip_text = "打开 Emoji 表情面板"
+
+[node name="StickerStampBtn" type="Button" parent="Body/StickerPanel/StickerHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "💮"
+theme_override_font_sizes/font_size = 16
+tooltip_text = "印章：选图案后点画布盖戳（Q弹动效）"
+
+[node name="StickerHint" type="Label" parent="Body/StickerPanel"]
+layout_mode = 2
+text = "点击 📂 打开贴纸文件夹"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+autowrap_mode = 1
+
+[node name="StickerScroll" type="ScrollContainer" parent="Body/StickerPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StickerGrid" type="GridContainer" parent="Body/StickerPanel/StickerScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="HintBar" type="ColorRect" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -26.0
+color = Color(0.86, 0.86, 0.9, 1)
+mouse_filter = 2
+
+[node name="HintDivider" type="ColorRect" parent="HintBar"]
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 0.0
+offset_bottom = 1.0
+color = Color(0.74, 0.74, 0.8, 1)
+mouse_filter = 2
+
+[node name="HintLabel" type="Label" parent="HintBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 14.0
+offset_right = -14.0
+offset_top = 2.0
+text = "💡 双击空白处新建文本块 · 拖拽移动 · Ctrl+滚轮缩放 · 右键更多 · 按 ❓ 查看帮助"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.38, 0.38, 0.44, 1)
+horizontal_alignment = 1
+vertical_alignment = 1
