@@ -1,0 +1,59 @@
+name: 构建并发布 Windows 版
+
+# 手动触发：GitHub 仓库 → Actions 标签 → 选「构建并发布 Windows 版」→ Run workflow
+# 填版本号（如 v0.1）会同时发到 Release 页，朋友直接下 exe；留空则只构建，可在 Actions 页下产物
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release 版本号（如 v0.1，留空则只构建不发布）'
+        required: false
+        default: ''
+
+permissions:
+  contents: write  # 发 Release 需要写权限
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 下载 Godot 4.6 + 导出模板
+        run: |
+          set -e
+          # Godot 4.6 Linux 编辑器（CI 在 Linux 跑，但能导出 Windows exe）
+          wget -q https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip
+          unzip -q Godot_v4.6-stable_linux.x86_64.zip
+          chmod +x Godot_v4.6-stable_linux.x86_64
+          # 导出模板（解压到 Godot 默认查找路径）
+          wget -q https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable-export-templates.zip
+          mkdir -p ~/.local/share/godot/export_templates/4.6.stable
+          unzip -q -j Godot_v4.6-stable-export-templates.zip -d ~/.local/share/godot/export_templates/4.6.stable
+          echo "--- 模板文件 ---" && ls ~/.local/share/godot/export_templates/4.6.stable/
+
+      - name: 导入项目资源
+        run: ./Godot_v4.6-stable_linux.x86_64 --headless --import 2>&1 | tail -20
+
+      - name: 导出 Windows exe
+        run: |
+          mkdir -p build
+          ./Godot_v4.6-stable_linux.x86_64 --headless --export-release "Windows Desktop" build/DollDollNote.exe 2>&1 | tail -20
+          echo "--- 构建产物 ---" && ls -la build/
+
+      - name: 上传构建产物（Actions 页可下载）
+        uses: actions/upload-artifact@v4
+        with:
+          name: DollDollNote-windows
+          path: build/DollDollNote.exe
+
+      - name: 发布到 Release（仅当填了版本号）
+        if: ${{ github.event.inputs.version != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version }}
+          name: ${{ github.event.inputs.version }}
+          files: build/DollDollNote.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
