@@ -369,15 +369,11 @@ text = "🌳 图层"
 theme_override_font_sizes/font_size = 16
 theme_override_colors/font_color = Color(0.3, 0.3, 0.3, 1)
 
-[node name="TreeScroll" type="ScrollContainer" parent="Body/TreePanel"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-
-[node name="LayerTree" type="Tree" parent="Body/TreePanel/TreeScroll"]
+[node name="LayerTree" type="Tree" parent="Body/TreePanel"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+size_flags_vertical = 3
 hide_root = true
 
 [node name="PaperScroll" type="Control" parent="Body"]
