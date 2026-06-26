@@ -2871,6 +2871,11 @@ func _input(event: InputEvent):
 			KEY_D:
 				if event.ctrl_pressed:
 					_duplicate_selected()
+			KEY_G:
+				if event.ctrl_pressed and event.shift_pressed:
+					_select_group()
+				elif event.ctrl_pressed:
+					_group_selected()
 			KEY_TAB:
 				# 选中（预览态）文本块时按 Tab 进入编辑；编辑态 Tab 由 TextEdit 拦截唤起插入浮层
 				if _current_selected_block is TextBlock:
@@ -3811,6 +3816,9 @@ const CTX_ROTATE_L: int = 5
 const CTX_ROTATE_R: int = 6
 const CTX_COPY_STYLE: int = 7
 const CTX_PASTE_STYLE: int = 8
+const CTX_GROUP: int = 9       ## 编组
+const CTX_UNGROUP: int = 10    ## 解散组
+const CTX_SELECT_GROUP: int = 11 ## 选全组
 
 ## 块右键 → 弹出上下文菜单（复制/置顶置底/旋转/删除）
 func _on_block_context_menu(block: BaseBlock) -> void:
@@ -3825,6 +3833,12 @@ func _on_block_context_menu(block: BaseBlock) -> void:
 	menu.add_separator()
 	menu.add_item("↺ 左旋 90°", CTX_ROTATE_L)
 	menu.add_item("↻ 右旋 90°", CTX_ROTATE_R)
+	menu.add_separator()
+	if _selected_blocks.size() >= 2:
+		menu.add_item("🔗 编组  Ctrl+G", CTX_GROUP)
+	if _current_selected_block != null and is_instance_valid(_current_selected_block) and not _current_selected_block.data.group_id.is_empty():
+		menu.add_item("🎯 选全组  Ctrl+Shift+G", CTX_SELECT_GROUP)
+		menu.add_item("✂️ 解散组", CTX_UNGROUP)
 	menu.add_separator()
 	menu.add_item("删除  Del", CTX_DELETE)
 	menu.id_pressed.connect(_on_context_action)
@@ -3854,6 +3868,64 @@ func _on_context_action(id: int) -> void:
 			_copy_style()
 		CTX_PASTE_STYLE:
 			_paste_style()
+		CTX_GROUP:
+			_group_selected()
+		CTX_UNGROUP:
+			_ungroup_selected()
+		CTX_SELECT_GROUP:
+			_select_group()
+
+
+## 编组：把当前选中的多个块归入一个新组（同 group_id），并刷新组色边框
+func _group_selected() -> void:
+	if _selected_blocks.size() < 2:
+		return
+	_push_undo()
+	var gid: String = "grp_" + str(randi())
+	for b in _selected_blocks:
+		if is_instance_valid(b):
+			(b as BaseBlock).data.group_id = gid
+	_refresh_selection_colors()
+	_mark_dirty()
+
+
+## 解散组：清空选中块的 group_id
+func _ungroup_selected() -> void:
+	if _selected_blocks.is_empty():
+		return
+	_push_undo()
+	for b in _selected_blocks:
+		if is_instance_valid(b):
+			(b as BaseBlock).data.group_id = ""
+	_refresh_selection_colors()
+	_mark_dirty()
+
+
+## 选全组：选中当前块所在组的所有块
+func _select_group() -> void:
+	if _current_selected_block == null or not is_instance_valid(_current_selected_block):
+		return
+	var gid: String = _current_selected_block.data.group_id
+	if gid.is_empty():
+		return
+	_deselect_all()
+	for child in paper.get_children():
+		if child is BaseBlock and is_instance_valid(child):
+			var cb: BaseBlock = child as BaseBlock
+			if cb.data.group_id == gid:
+				_selected_blocks.append(cb)
+				cb.select()
+	if not _selected_blocks.is_empty():
+		_current_selected_block = _selected_blocks[0]
+		_show_inspector()
+		_update_font_ui()
+
+
+## 刷新当前选中块的边框颜色（编组/解散后调，让组色立即生效）
+func _refresh_selection_colors() -> void:
+	for b in _selected_blocks:
+		if is_instance_valid(b) and (b as BaseBlock)._is_selected:
+			(b as BaseBlock).select()
 
 
 ## 复制选中块的样式（仅文本块；存样式字段，不含内容/位置/尺寸）

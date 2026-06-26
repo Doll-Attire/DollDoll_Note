@@ -141,7 +141,7 @@ func select() -> void:
 	resize_handle.visible = true
 	var s := StyleBoxFlat.new()
 	s.bg_color = Color.TRANSPARENT
-	s.border_color = Color(0.3, 0.6, 1.0, 1.0)
+	s.border_color = _selection_border_color()
 	s.set_border_width_all(4)
 	s.set_corner_radius_all(8)
 	selection_border.add_theme_stylebox_override("panel", s)
@@ -233,6 +233,14 @@ func _play_drag_anim(up: bool) -> void:
 	var target: Vector2 = Vector2(1.03, 1.03) if up else Vector2.ONE
 	_scale_tween.tween_property(self, "scale", target, 0.25) \
 		.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+
+
+## 选中边框颜色：组里的块用组色（同组同色，一眼区分），未分组用默认蓝
+func _selection_border_color() -> Color:
+	if data != null and not data.group_id.is_empty():
+		var h: float = float(abs(data.group_id.hash()) % 360) / 360.0
+		return Color.from_hsv(h, 0.55, 0.95, 1.0)
+	return Color(0.3, 0.6, 1.0, 1.0)
 
 
 ## 子类钩子：选中时额外操作
