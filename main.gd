@@ -2153,8 +2153,10 @@ func _load_custom_templates() -> Array:
 ## 套用自定义模板：深拷贝 blocks 后挂到当前画布（避免多实例共享同一 Resource）
 func _apply_custom_template(blocks: Array) -> void:
 	_deselect_all()
+	var gid: String = "grp_" + str(randi())  # 自定义模板所有块自动归一组（预制日记不散开）
 	for block_data in blocks:
 		var dup: BlockData = (block_data as BlockData).duplicate(true)
+		dup.group_id = gid
 		_spawn_block(dup)
 	_mark_dirty()
 
@@ -2294,6 +2296,7 @@ func _draw_fortune() -> void:
 func _create_template_blocks(block_defs: Array) -> void:
 	_deselect_all()
 	var created: Array[BaseBlock] = []
+	var gid: String = "grp_" + str(randi())  # 内置模板所有块自动归一组
 	for def in block_defs:
 		var d: Dictionary = def as Dictionary
 		var btype: String = d.get("type", "text") as String
@@ -2308,6 +2311,7 @@ func _create_template_blocks(block_defs: Array) -> void:
 			data = _make_image_data(d, pos, bsize)
 		if data == null:
 			continue
+		data.group_id = gid
 		if d.has("rotation"):
 			data.rotation_degrees = float(d["rotation"])
 		var block: BaseBlock = _spawn_block(data)
@@ -2762,6 +2766,8 @@ func _input(event: InputEvent):
 			_text_more_popup.hide()
 		elif _diary_popup != null and _diary_popup.visible:
 			_diary_popup.hide()
+		elif tree_panel != null and tree_panel.visible:
+			tree_toggle.button_pressed = false
 		elif sticker_panel.visible:
 			sticker_toggle.button_pressed = false
 		elif _note_list_panel != null and _note_list_panel.visible:
