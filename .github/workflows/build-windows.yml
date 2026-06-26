@@ -27,10 +27,10 @@ jobs:
           wget -q https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_linux.x86_64.zip
           unzip -q Godot_v4.6-stable_linux.x86_64.zip
           chmod +x Godot_v4.6-stable_linux.x86_64
-          # 导出模板（解压到 Godot 默认查找路径）
-          wget -q https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable-export-templates.zip
+          # 导出模板（.tpz 本质是 zip，解压到 Godot 默认查找路径）
+          wget -q https://github.com/godotengine/godot/releases/download/4.6-stable/Godot_v4.6-stable_export_templates.tpz
           mkdir -p ~/.local/share/godot/export_templates/4.6.stable
-          unzip -q -j Godot_v4.6-stable-export-templates.zip -d ~/.local/share/godot/export_templates/4.6.stable
+          unzip -q -j Godot_v4.6-stable_export_templates.tpz -d ~/.local/share/godot/export_templates/4.6.stable
           echo "--- 模板文件 ---" && ls ~/.local/share/godot/export_templates/4.6.stable/
 
       - name: 导入项目资源
