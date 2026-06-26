@@ -415,52 +415,50 @@ const SETTING_ID_FX_LIGHT_LEAK: int = 20
 ## 吸附网格大小（像素）
 const GRID_SNAP_SIZE: int = 24
 
+## 设置菜单勾选项文本前缀（✅/⬜）——某些主题下 PopupMenu 默认勾选图标渲染不出来，用文本前缀兜底
+func _check_text(label: String, checked: bool) -> String:
+	return ("✅ " if checked else "⬜ ") + label
+
+## 加一个勾选项（文本带前缀 + 设 checked 状态）
+func _add_check(popup: PopupMenu, label: String, id: int, checked: bool) -> void:
+	popup.add_check_item(_check_text(label, checked), id)
+	popup.set_item_checked(popup.get_item_index(id), checked)
+
+## 切换勾选项状态（刷新 checked + 文本前缀）
+func _refresh_check(popup: PopupMenu, idx: int, checked: bool) -> void:
+	popup.set_item_checked(idx, checked)
+	var text: String = popup.get_item_text(idx)
+	var sp: int = text.find(" ")
+	popup.set_item_text(idx, ("✅ " if checked else "⬜ ") + (text.substr(sp + 1) if sp >= 0 else text))
+
+
 func _setup_settings_menu():
 	var popup: PopupMenu = settings_btn.get_popup()
 	popup.clear()
-	popup.hide_on_checkable_item_selection = false  # 点击勾选项不关闭菜单
+	popup.hide_on_checkable_item_selection = false
 	# 交互
-	popup.add_check_item("Ctrl+拖拽旋转块", SETTING_ID_CTRL_ROTATE)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_CTRL_ROTATE), _setting_ctrl_drag_rotate)
-	popup.add_check_item("移动吸附网格", SETTING_ID_SNAP_GRID)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_SNAP_GRID), _setting_snap_grid)
-	popup.add_check_item("🎐 闲置微浮动", SETTING_ID_FLOAT)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FLOAT), _setting_idle_float)
+	_add_check(popup, "Ctrl+拖拽旋转块", SETTING_ID_CTRL_ROTATE, _setting_ctrl_drag_rotate)
+	_add_check(popup, "移动吸附网格", SETTING_ID_SNAP_GRID, _setting_snap_grid)
+	_add_check(popup, "🎐 闲置微浮动", SETTING_ID_FLOAT, _setting_idle_float)
 	popup.add_separator()
-	# 粒子
 	_add_section_title(popup, "✦ 粒子")
-	popup.add_check_item("✨ 鼠标星光轨迹", SETTING_ID_FX_TRAIL)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_TRAIL), _setting_fx_trail)
-	popup.add_check_item("💫 点击迸发粒子", SETTING_ID_FX_CLICK)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_CLICK), _setting_fx_click)
-	# 天气
+	_add_check(popup, "✨ 鼠标星光轨迹", SETTING_ID_FX_TRAIL, _setting_fx_trail)
+	_add_check(popup, "💫 点击迸发粒子", SETTING_ID_FX_CLICK, _setting_fx_click)
 	_add_section_title(popup, "🌤 天气")
-	popup.add_check_item("☄️ 流星雨", SETTING_ID_FX_METEOR)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_METEOR), _setting_fx_meteor)
-	popup.add_check_item("🌸 樱花飘落", SETTING_ID_FX_PETAL)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_PETAL), _setting_fx_petal)
-	popup.add_check_item("🌧 下雨", SETTING_ID_FX_RAIN)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_RAIN), _setting_fx_rain)
-	popup.add_check_item("❄️ 下雪", SETTING_ID_FX_SNOW)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_SNOW), _setting_fx_snow)
-	popup.add_check_item("✨ 萤火虫", SETTING_ID_FX_FIREFLY)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_FIREFLY), _setting_fx_firefly)
-	# 水面
+	_add_check(popup, "☄️ 流星雨", SETTING_ID_FX_METEOR, _setting_fx_meteor)
+	_add_check(popup, "🌸 樱花飘落", SETTING_ID_FX_PETAL, _setting_fx_petal)
+	_add_check(popup, "🌧 下雨", SETTING_ID_FX_RAIN, _setting_fx_rain)
+	_add_check(popup, "❄️ 下雪", SETTING_ID_FX_SNOW, _setting_fx_snow)
+	_add_check(popup, "✨ 萤火虫", SETTING_ID_FX_FIREFLY, _setting_fx_firefly)
 	_add_section_title(popup, "💧 水面")
-	popup.add_check_item("🌊 水面波纹", SETTING_ID_FX_WATER)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_WATER), _setting_fx_water)
-	popup.add_check_item("🌊 涟漪（鼠标泛起）", SETTING_ID_FX_RIPPLE)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_RIPPLE), _setting_fx_ripple)
+	_add_check(popup, "🌊 水面波纹", SETTING_ID_FX_WATER, _setting_fx_water)
+	_add_check(popup, "🌊 涟漪（鼠标泛起）", SETTING_ID_FX_RIPPLE, _setting_fx_ripple)
 	popup.add_separator()
 	_add_section_title(popup, "🎬 画面氛围")
-	popup.add_check_item("🌑 暗角", SETTING_ID_FX_VIGNETTE)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_VIGNETTE), _setting_fx_vignette)
-	popup.add_check_item("📺 复古扫描线", SETTING_ID_FX_SCANLINES)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_SCANLINES), _setting_fx_scanlines)
-	popup.add_check_item("🎞 胶片颗粒", SETTING_ID_FX_GRAIN)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_GRAIN), _setting_fx_grain)
-	popup.add_check_item("🌅 暖色漏光", SETTING_ID_FX_LIGHT_LEAK)
-	popup.set_item_checked(popup.get_item_index(SETTING_ID_FX_LIGHT_LEAK), _setting_fx_light_leak)
+	_add_check(popup, "🌑 暗角", SETTING_ID_FX_VIGNETTE, _setting_fx_vignette)
+	_add_check(popup, "📺 复古扫描线", SETTING_ID_FX_SCANLINES, _setting_fx_scanlines)
+	_add_check(popup, "🎞 胶片颗粒", SETTING_ID_FX_GRAIN, _setting_fx_grain)
+	_add_check(popup, "🌅 暖色漏光", SETTING_ID_FX_LIGHT_LEAK, _setting_fx_light_leak)
 	popup.add_separator()
 	popup.add_item("🎨 主题配色…", SETTING_ID_THEME)
 	popup.add_item("🎈 贴纸呼吸设置…", SETTING_ID_BREATHE)
@@ -480,77 +478,77 @@ func _on_setting_toggled(id: int) -> void:
 	match id:
 		SETTING_ID_CTRL_ROTATE:
 			_setting_ctrl_drag_rotate = not _setting_ctrl_drag_rotate
-			popup.set_item_checked(idx, _setting_ctrl_drag_rotate)
+			_refresh_check(popup, idx, _setting_ctrl_drag_rotate)
 			_apply_settings_to_blocks()
 			_save_settings()
 		SETTING_ID_SNAP_GRID:
 			_setting_snap_grid = not _setting_snap_grid
-			popup.set_item_checked(idx, _setting_snap_grid)
+			_refresh_check(popup, idx, _setting_snap_grid)
 			_apply_settings_to_blocks()
 			_save_settings()
 		SETTING_ID_FX_TRAIL:
 			_setting_fx_trail = not _setting_fx_trail
-			popup.set_item_checked(idx, _setting_fx_trail)
+			_refresh_check(popup, idx, _setting_fx_trail)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_CLICK:
 			_setting_fx_click = not _setting_fx_click
-			popup.set_item_checked(idx, _setting_fx_click)
+			_refresh_check(popup, idx, _setting_fx_click)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_METEOR:
 			_setting_fx_meteor = not _setting_fx_meteor
-			popup.set_item_checked(idx, _setting_fx_meteor)
+			_refresh_check(popup, idx, _setting_fx_meteor)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_WATER:
 			_setting_fx_water = not _setting_fx_water
-			popup.set_item_checked(idx, _setting_fx_water)
+			_refresh_check(popup, idx, _setting_fx_water)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_PETAL:
 			_setting_fx_petal = not _setting_fx_petal
-			popup.set_item_checked(idx, _setting_fx_petal)
+			_refresh_check(popup, idx, _setting_fx_petal)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_RAIN:
 			_setting_fx_rain = not _setting_fx_rain
-			popup.set_item_checked(idx, _setting_fx_rain)
+			_refresh_check(popup, idx, _setting_fx_rain)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_SNOW:
 			_setting_fx_snow = not _setting_fx_snow
-			popup.set_item_checked(idx, _setting_fx_snow)
+			_refresh_check(popup, idx, _setting_fx_snow)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_FIREFLY:
 			_setting_fx_firefly = not _setting_fx_firefly
-			popup.set_item_checked(idx, _setting_fx_firefly)
+			_refresh_check(popup, idx, _setting_fx_firefly)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_RIPPLE:
 			_setting_fx_ripple = not _setting_fx_ripple
-			popup.set_item_checked(idx, _setting_fx_ripple)
+			_refresh_check(popup, idx, _setting_fx_ripple)
 			_apply_fx_settings()
 			_save_settings()
 		SETTING_ID_FX_VIGNETTE:
 			_setting_fx_vignette = not _setting_fx_vignette
-			popup.set_item_checked(idx, _setting_fx_vignette)
+			_refresh_check(popup, idx, _setting_fx_vignette)
 			_apply_canvas_fx()
 			_save_settings()
 		SETTING_ID_FX_SCANLINES:
 			_setting_fx_scanlines = not _setting_fx_scanlines
-			popup.set_item_checked(idx, _setting_fx_scanlines)
+			_refresh_check(popup, idx, _setting_fx_scanlines)
 			_apply_canvas_fx()
 			_save_settings()
 		SETTING_ID_FX_GRAIN:
 			_setting_fx_grain = not _setting_fx_grain
-			popup.set_item_checked(idx, _setting_fx_grain)
+			_refresh_check(popup, idx, _setting_fx_grain)
 			_apply_canvas_fx()
 			_save_settings()
 		SETTING_ID_FX_LIGHT_LEAK:
 			_setting_fx_light_leak = not _setting_fx_light_leak
-			popup.set_item_checked(idx, _setting_fx_light_leak)
+			_refresh_check(popup, idx, _setting_fx_light_leak)
 			_apply_canvas_fx()
 			_save_settings()
 		SETTING_ID_BREATHE:
@@ -559,7 +557,7 @@ func _on_setting_toggled(id: int) -> void:
 			_prompt_theme_select()
 		SETTING_ID_FLOAT:
 			_setting_idle_float = not _setting_idle_float
-			popup.set_item_checked(idx, _setting_idle_float)
+			_refresh_check(popup, idx, _setting_idle_float)
 			_apply_settings_to_blocks()
 			_save_settings()
 		SETTING_ID_DEFAULT_TEXT:

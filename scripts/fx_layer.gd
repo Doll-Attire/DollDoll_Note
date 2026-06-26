@@ -171,9 +171,9 @@ func _update_ambient(delta: float) -> void:
 		_meteor_timer += delta
 		if _meteor_timer >= _meteor_next:
 			_meteor_timer = 0.0
-			_meteor_next = randf_range(0.5, 1.3)
+			_meteor_next = randf_range(0.25, 0.6)
 			_spawn_meteor()
-			if randf() < 0.45:
+			if randf() < 0.65:
 				_spawn_meteor()
 	if petal_enabled:
 		_petal_timer += delta
@@ -202,10 +202,10 @@ func _update_ambient(delta: float) -> void:
 func _spawn_meteor() -> void:
 	if _particles.size() >= MAX_PARTICLES:
 		return
-	var vel := Vector2(randf_range(300.0, 520.0), randf_range(160.0, 280.0))
+	var vel := Vector2(randf_range(180.0, 340.0), randf_range(120.0, 220.0))
 	_particles.append(_make_particle(
 		Vector2(randf_range(-size.x * 0.3, size.x), -30.0),
-		vel, 1.8, randf_range(4.0, 7.0), METEOR_COLOR, KIND_METEOR))
+		vel, 2.6, randf_range(6.0, 10.0), METEOR_COLOR, KIND_METEOR))
 	# 修正拖尾朝向
 	_particles[_particles.size() - 1]["rot"] = vel.angle()
 
