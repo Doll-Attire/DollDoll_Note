@@ -42,6 +42,9 @@ extends Control
 @onready var paper_scroll: Control = %PaperScroll
 @onready var paper: PaperDropTarget = %Paper
 @onready var sticker_panel: VBoxContainer = %StickerPanel
+@onready var tree_toggle: Button = %TreeToggle
+@onready var tree_panel: VBoxContainer = %TreePanel
+@onready var layer_tree: Tree = %LayerTree
 @onready var splitter: Control = %Splitter
 @onready var open_sticker_dir: Button = %OpenStickerDir
 @onready var refresh_stickers: Button = %RefreshStickers
@@ -265,6 +268,7 @@ func _ready():
 	_setup_settings_menu()
 	_setup_new_menu()
 	_setup_fx_layer()
+	_setup_tree_panel()
 	_setup_canvas_fx()
 	_setup_md_editor()
 	_setup_md_toolbar()
@@ -2344,6 +2348,7 @@ func _spawn_block(data: BlockData, play_anim: bool = true) -> BaseBlock:
 	# 统一 Q 弹弹出动画（新建块用；撤销恢复时跳过，避免重建时全部弹出）
 	if play_anim:
 		block._play_spawn_anim()
+	_refresh_tree_panel()
 	return block
 
 
@@ -2693,6 +2698,7 @@ func _connect_signals():
 	rotate_reset_btn.pressed.connect(_on_rotate_reset)
 	bg_color_picker.color_changed.connect(_on_bg_color_changed)
 	sticker_toggle.toggled.connect(_on_sticker_toggle)
+	tree_toggle.toggled.connect(_on_tree_toggle)
 	open_sticker_dir.pressed.connect(_on_open_sticker_dir)
 	export_json_btn.pressed.connect(_on_export_json)
 	export_image_btn.pressed.connect(_on_export_image)
@@ -3046,6 +3052,7 @@ func _instantiate_block(block_data: BlockData) -> void:
 	paper.add_child(block)
 	block.setup(block_data)
 	_connect_block_signals(block)
+	_refresh_tree_panel()
 
 ## 从 _current_page_data 恢复纸张背景样式
 func _apply_paper_style_from_data():
@@ -3805,6 +3812,7 @@ func _delete_selected_block():
 			_current_page_data.blocks.erase(data)
 			b._play_delete_anim()  # Q 弹消失，动画结束自动 queue_free
 	_mark_dirty()
+	_refresh_tree_panel()
 
 
 ## 右键上下文菜单的项 ID
@@ -3887,6 +3895,7 @@ func _group_selected() -> void:
 			(b as BaseBlock).data.group_id = gid
 	_refresh_selection_colors()
 	_mark_dirty()
+	_refresh_tree_panel()
 
 
 ## 解散组：清空选中块的 group_id
@@ -3899,6 +3908,7 @@ func _ungroup_selected() -> void:
 			(b as BaseBlock).data.group_id = ""
 	_refresh_selection_colors()
 	_mark_dirty()
+	_refresh_tree_panel()
 
 
 ## 选全组：选中当前块所在组的所有块
@@ -4906,6 +4916,104 @@ func _on_note_list_toggle(on: bool) -> void:
 func _on_sticker_toggle(toggled_on: bool):
 	sticker_panel.visible = toggled_on
 	splitter.visible = toggled_on
+
+## 图层面板：显示/隐藏
+func _on_tree_toggle(toggled_on: bool) -> void:
+	tree_panel.visible = toggled_on
+	if toggled_on:
+		_refresh_tree_panel()
+
+
+## 初始化图层面板（连接 Tree 选中信号）
+func _setup_tree_panel() -> void:
+	if layer_tree == null:
+		return
+	layer_tree.item_selected.connect(_on_tree_item_selected)
+
+
+## 刷新图层树：按组列出所有块（组可折叠，点组=选全组，点块=选块）
+func _refresh_tree_panel() -> void:
+	if layer_tree == null or not tree_panel.visible:
+		return
+	layer_tree.clear()
+	var root: TreeItem = layer_tree.create_item()
+	var groups: Dictionary = {}
+	var ungrouped: Array = []
+	for child in paper.get_children():
+		if child is BaseBlock and is_instance_valid(child):
+			var b: BaseBlock = child as BaseBlock
+			if b.data.group_id.is_empty():
+				ungrouped.append(b)
+			else:
+				var gid: String = b.data.group_id
+				if not groups.has(gid):
+					groups[gid] = []
+				(groups[gid] as Array).append(b)
+	for gid in groups:
+		var gitem: TreeItem = layer_tree.create_item(root)
+		gitem.set_text(0, "🔗 组 (" + str((groups[gid] as Array).size()) + ")")
+		gitem.set_metadata(0, {"type": "group", "gid": gid})
+		for b in groups[gid]:
+			var bi: TreeItem = layer_tree.create_item(gitem)
+			bi.set_text(0, _block_label(b as BaseBlock))
+			bi.set_metadata(0, {"type": "block", "block": b})
+	for b in ungrouped:
+		var bi2: TreeItem = layer_tree.create_item(root)
+		bi2.set_text(0, _block_label(b as BaseBlock))
+		bi2.set_metadata(0, {"type": "block", "block": b})
+
+
+## 点击图层项：选中对应块 / 组
+func _on_tree_item_selected() -> void:
+	var item: TreeItem = layer_tree.get_selected()
+	if item == null:
+		return
+	var meta: Variant = item.get_metadata(0)
+	if not (meta is Dictionary):
+		return
+	var d: Dictionary = meta as Dictionary
+	if d.get("type", "") == "block":
+		var b: BaseBlock = d.get("block") as BaseBlock
+		if b != null and is_instance_valid(b):
+			_deselect_all()
+			_current_selected_block = b
+			_selected_blocks = [b]
+			b.select()
+			_show_inspector()
+			_update_font_ui()
+	elif d.get("type", "") == "group":
+		var gid: String = d.get("gid")
+		_deselect_all()
+		for child in paper.get_children():
+			if child is BaseBlock and is_instance_valid(child):
+				var cb: BaseBlock = child as BaseBlock
+				if cb.data.group_id == gid:
+					_selected_blocks.append(cb)
+					cb.select()
+		if not _selected_blocks.is_empty():
+			_current_selected_block = _selected_blocks[0]
+			_show_inspector()
+			_update_font_ui()
+
+
+## 块在图层里的显示标签
+func _block_label(b: BaseBlock) -> String:
+	if b is TextBlock:
+		var t: String = (b.data as TextBlockData).bbcode_content
+		t = t.replace("
+", " ").strip_edges()
+		if t.length() > 14:
+			t = t.substr(0, 14) + "…"
+		return "📝 " + (t if not t.is_empty() else "文本")
+	if b is EmojiStickerBlock:
+		return "😊 " + ((b.data as EmojiStickerData).emoji_text)
+	if b is ImageBlock:
+		return "🖼 图片"
+	if b is ShapeBlock:
+		return "▱ 形状"
+	if b is DrawBlock:
+		return "✏️ 涂鸦"
+	return "块"
 
 ## 贴纸图片合法扩展名
 const STICKER_EXTS: Array[String] = ["png", "jpg", "jpeg", "webp"]
